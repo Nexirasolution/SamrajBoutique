@@ -12,53 +12,46 @@ const PAPER = '#FFFFFF';
 export default function BannerCarousel({ banners }) {
   const [index, setIndex] = useState(0);
 
+  // Autoplay. Depends on `index` so the timer restarts after a manual
+  // arrow/dot click instead of skipping right after it.
   useEffect(() => {
-    if (!banners?.length) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % banners.length), 4500);
-    return () => clearInterval(t);
-  }, [banners]);
+    if (!banners?.length || banners.length < 2) return;
+    const t = setTimeout(() => setIndex((i) => (i + 1) % banners.length), 4500);
+    return () => clearTimeout(t);
+  }, [banners, index]);
 
   if (!banners?.length) return null;
 
   return (
     <section className="relative w-full overflow-hidden" style={{ background: PAPER }}>
       {/*
-        Image-only banner now. Mobile gets a tall fixed-height box that the
-        image fully fills (object-cover) — no text panel eating into it.
-        Desktop keeps the same wide aspect-ratio box as before.
+        One image per banner (the desktop image), used on every screen size.
+        The frame has a fixed aspect ratio and the image fills it with
+        object-cover, so there are never gaps on mobile or desktop:
+          mobile  -> 16:9 (less side-cropping than a tall box)
+          sm+     -> ~2.375:1 (same 42.1% ratio as before)
       */}
-      <div className="relative w-full h-[500px] sm:h-0 sm:pb-[42.1%]">
+      <div className="relative w-full aspect-[16/9] sm:aspect-[100/42.1]">
 
-        {banners.map((b, i) => {
-          const mobileSrc = b.mobileImage || b.image;
-
-          return (
-            <Link
-              key={b._id}
-              href={b.link || '#'}
-              className={`absolute inset-0 block transition-opacity duration-700 ${
-                i === index ? 'opacity-100' : 'opacity-0 pointer-events-none'
-              } ${!b.link ? 'pointer-events-none' : ''}`}
-              tabIndex={i === index ? 0 : -1}
-              aria-hidden={i !== index}
-            >
-              {/* Mobile image — uses mobileImage if set, falls back to main image */}
-              <img
-                src={mobileSrc}
-                alt={b.title || 'Banner'}
-                className="block sm:hidden absolute inset-0 w-full h-full object-cover object-center"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-              />
-              {/* Desktop image */}
-              <img
-                src={b.image}
-                alt={b.title || 'Banner'}
-                className="hidden sm:block absolute inset-0 w-full h-full object-cover object-center"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-              />
-            </Link>
-          );
-        })}
+        {banners.map((b, i) => (
+          <Link
+            key={b._id}
+            href={b.link || '#'}
+            className={`absolute inset-0 block transition-opacity duration-700 ${
+              i === index ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            } ${!b.link ? 'pointer-events-none' : ''}`}
+            tabIndex={i === index ? 0 : -1}
+            aria-hidden={i !== index}
+          >
+            <img
+              src={b.image}
+              alt={b.title || 'Banner'}
+              className="absolute inset-0 w-full h-full object-cover object-center select-none"
+              draggable={false}
+              loading={i === 0 ? 'eager' : 'lazy'}
+            />
+          </Link>
+        ))}
 
         {banners.length > 1 && (
           <>
@@ -81,7 +74,7 @@ export default function BannerCarousel({ banners }) {
             </button>
 
             {/* Thin dash indicators — bottom-anchored on both mobile and desktop */}
-            <div className="absolute bottom-4 sm:bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               {banners.map((_, i) => (
                 <button
                   key={i}
