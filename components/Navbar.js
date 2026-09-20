@@ -212,11 +212,12 @@ export default function Navbar() {
             </div>
 
             {/* Center: logo */}
-            <Link href="/" className="flex items-center justify-self-center">
-              <div className="relative w-28 h-28 sm:w-36 sm:h-36">
-                <Image src="/logo.png" alt="Samraj Boutique" fill className="object-contain" priority />
-              </div>
-            </Link>
+           {/* Center: logo */}
+<Link href="/" className="flex items-center justify-self-center">
+  <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+    <Image src="/logo.png" alt="Samraj Boutique" fill className="object-contain" priority />
+  </div>
+</Link>
 
             {/* Right: search + wishlist + cart */}
             <div className="flex items-center gap-2.5 justify-self-end">
