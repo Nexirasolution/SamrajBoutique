@@ -25,9 +25,11 @@ const FONT_SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 // Adjust these field names if your Product model calls them something else.
 const OPTION_FIELDS = ['sleeveOptions', 'zipOptions'];
 
-// Shared button styles (colors live in classes so hover states can override them)
+// Shared button styles (colors live in classes so hover states can override them).
+// Mobile: 44px tall (comfortable tap target), 14px text, semibold.
+// sm and up: back to the compact 36px / 12px look.
 const BTN =
-  'flex-1 flex items-center justify-center h-9 px-3 rounded-full text-[12px] font-medium tracking-wide whitespace-nowrap transition-colors active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed';
+  'flex-1 flex items-center justify-center h-11 sm:h-9 px-4 sm:px-3 rounded-full text-[14px] sm:text-[12px] font-semibold sm:font-medium tracking-wide whitespace-nowrap transition-colors active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed';
 const BTN_OUTLINE = `${BTN} bg-white text-black border border-[#C9A227] hover:bg-[#F6EFD9] disabled:hover:bg-white`;
 const BTN_SOLID = `${BTN} bg-black text-[#C9A227] border border-[#C9A227] hover:bg-[#C9A227] hover:text-black disabled:hover:bg-black disabled:hover:text-[#C9A227]`;
 
@@ -224,7 +226,7 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             disabled
-            className="flex-1 h-9 rounded-full text-[12px] font-medium tracking-wide cursor-not-allowed"
+            className="flex-1 h-11 sm:h-9 rounded-full text-[14px] sm:text-[12px] font-medium tracking-wide cursor-not-allowed"
             style={{ background: LINE, color: INK_SOFT }}
           >
             Out of stock
