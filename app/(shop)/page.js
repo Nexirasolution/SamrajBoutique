@@ -16,12 +16,17 @@ import Image from 'next/image';
 import { formatINR } from '@/lib/utils';
 import { ArrowRight, Tag } from 'lucide-react';
 
-// Design tokens — shared black / white / gold theme
-const INK = '#000000';
-const INK_SOFT = '#6B6B6B';
-const GOLD = '#C9A227';
-const GOLD_WASH = '#F6EFD9';
-const HAIRLINE = '#E8E8E8';
+// Design tokens — Light Blush + Champagne Gold, shared with ProductCard,
+// ProductPage and CouponMarquee. Champagne gold is too light for small text,
+// so text stays a warm ink and gold is used for borders, fills and accents.
+// The CTA button classes below use the same hex values — keep them in sync.
+const INK = '#2B2022';          // primary text (warm near-black)
+const INK_SOFT = '#6E5F61';     // secondary text
+const BLUSH = '#F8D7DA';        // Light Blush
+const BLUSH_LIGHT = '#FDF1F2';  // very light blush surface
+const GOLD = '#D6B56D';         // Champagne Gold
+const GOLD_DEEP = '#8A6A24';    // gold used as text (readable contrast)
+const HAIRLINE = '#F0DADC';     // blush-tinted hairlines
 
 // Minimalist type: a clean, quiet sans. Headings are bold + tracked out;
 // body copy stays light so the boldness reads as intentional, not noisy.
@@ -121,8 +126,8 @@ export default async function HomePage() {
               >
                 {/* Circular image */}
                 <div
-                  className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-neutral-50 transition-transform duration-300 group-hover:scale-105"
-                  style={{ border: `1px solid ${GOLD}` }}
+                  className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden transition-transform duration-300 group-hover:scale-105"
+                  style={{ border: `1px solid ${GOLD}`, background: BLUSH_LIGHT }}
                 >
                   {c.image ? (
                     <img
@@ -131,7 +136,7 @@ export default async function HomePage() {
                       className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full" style={{ background: GOLD_WASH }} />
+                    <div className="w-full h-full" style={{ background: BLUSH }} />
                   )}
                 </div>
 
@@ -149,7 +154,9 @@ export default async function HomePage() {
       )}
 
       {/* Intro / Featured collection — centered copy, up to 6 New Arrivals, CTA */}
-      <section className="max-w-6xl mx-auto px-4 pt-16 pb-16 text-center">
+      {/* Top padding reduced (was pt-16) and heading margin removed (was mt-14)
+          to close the big gap under Shop by Category. */}
+      <section className="max-w-6xl mx-auto px-4 pt-8 sm:pt-10 pb-16 text-center">
         {/* <h2
           className="text-2xl sm:text-3xl font-bold tracking-[1px]"
           style={{ color: INK, fontFamily: FONT_SANS }}
@@ -164,7 +171,7 @@ export default async function HomePage() {
         </p> */}
 
         <h3
-          className="mt-14 text-lg sm:text-xl font-bold tracking-[3px] uppercase"
+          className="text-lg sm:text-xl font-bold tracking-[3px] uppercase"
           style={{ color: INK, fontFamily: FONT_SANS }}
         >
           Featured Collection
@@ -182,16 +189,20 @@ export default async function HomePage() {
         {/* Colors live in classes (not inline style) so the hover state can override them */}
         <Link
           href="/products"
-          className="inline-block mt-10 px-8 py-3 text-[12px] font-bold tracking-[2px] uppercase transition-colors bg-black text-[#C9A227] border border-[#C9A227] hover:bg-[#C9A227] hover:text-black"
+          className="inline-block mt-10 px-8 py-3 text-[12px] font-bold tracking-[2px] uppercase transition-colors bg-[#D6B56D] text-[#2B2022] border border-[#D6B56D] hover:bg-[#C7A257] hover:border-[#C7A257]"
           style={{ fontFamily: FONT_SANS }}
         >
           Shop the collection
         </Link>
       </section>
 
-      {/* Combo Offers */}
+      {/* Combo Offers — sits on a soft blush band so the page alternates
+          white and blush; the cards stay white on top of it. */}
       {plainCombos?.length > 0 && (
-        <section className="py-16 bg-white border-t" style={{ borderColor: HAIRLINE }}>
+        <section
+          className="py-16 border-t"
+          style={{ borderColor: GOLD, background: BLUSH_LIGHT }}
+        >
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex flex-col items-center text-center mb-8">
               <span
@@ -212,7 +223,7 @@ export default async function HomePage() {
               <Link
                 href="/combos"
                 className="hidden sm:flex items-center gap-1 text-sm font-bold hover:gap-2 transition-all mt-3"
-                style={{ color: INK, fontFamily: FONT_SANS }}
+                style={{ color: GOLD_DEEP, fontFamily: FONT_SANS }}
               >
                 View all <ArrowRight size={14} />
               </Link>
@@ -243,7 +254,7 @@ export default async function HomePage() {
                     style={{ border: `1px solid ${HAIRLINE}` }}
                   >
                     {/* Image */}
-                    <div className="relative w-full aspect-square overflow-hidden bg-neutral-50">
+                    <div className="relative w-full aspect-square overflow-hidden" style={{ background: BLUSH }}>
                       {cover ? (
                         <img
                           src={cover}
@@ -251,7 +262,7 @@ export default async function HomePage() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       ) : (
-                        <div className="w-full h-full" style={{ background: GOLD_WASH }} />
+                        <div className="w-full h-full" style={{ background: BLUSH }} />
                       )}
                       {pct > 0 && (
                         <div
@@ -264,7 +275,7 @@ export default async function HomePage() {
                       {isColorPack && (
                         <div
                           className="absolute top-2 right-2 text-[10px] font-medium px-2 py-0.5"
-                          style={{ background: INK, color: '#fff' }}
+                          style={{ background: BLUSH, color: INK, border: `1px solid ${GOLD}` }}
                         >
                           Color Pack
                         </div>
@@ -295,7 +306,7 @@ export default async function HomePage() {
                       {savings > 0 && (
                         <p
                           className="text-[10.5px] font-bold mt-1 tracking-wide uppercase"
-                          style={{ color: INK_SOFT, fontFamily: FONT_SANS }}
+                          style={{ color: GOLD_DEEP, fontFamily: FONT_SANS }}
                         >
                           Save {formatINR(savings)}
                         </p>
@@ -307,7 +318,7 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-8 text-center sm:hidden">
-              <Link href="/combo" className="text-sm font-bold" style={{ color: INK, fontFamily: FONT_SANS }}>
+              <Link href="/combo" className="text-sm font-bold" style={{ color: GOLD_DEEP, fontFamily: FONT_SANS }}>
                 View all combos →
               </Link>
             </div>

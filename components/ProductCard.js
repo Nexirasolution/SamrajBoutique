@@ -1,22 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingBag, Check } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatINR } from '@/lib/utils';
 import { getVariantTotalStock } from '@/lib/stock';
 import { useWishlist } from '@/components/WhishlistContext'; // adjust path as needed
 import { useCart } from '@/components/CartContext';
 
-const INK = '#000000';
-const INK_SOFT = '#6B6B6B';
-const GOLD = '#C9A227';
-const GOLD_WASH = '#F6EFD9';
-const LINE = '#E8E8E8';
-const DISABLED = '#BDBDBD';
+// Theme: Light Blush + Champagne Gold.
+// Champagne gold is too light to carry small text on white, so text stays a
+// warm dark ink and gold is used for borders, fills and accents.
+// The button classes below use the same hex values — keep them in sync.
+const INK = '#2B2022';         // primary text (warm near-black)
+const INK_SOFT = '#7A6A6C';    // secondary text, struck-through price
+const BLUSH = '#F8D7DA';       // Light Blush
+const BLUSH_LIGHT = '#FDF1F2'; // image well
+const GOLD = '#D6B56D';        // Champagne Gold
+const GOLD_DEEP = '#8A6A24';   // gold used as text on white (readable)
+const LINE = '#F0DADC';        // hairlines
+const DISABLED = '#C9B9BB';
 const PAPER = '#FFFFFF';
 const FONT_SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 
@@ -25,13 +31,20 @@ const FONT_SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 // Adjust these field names if your Product model calls them something else.
 const OPTION_FIELDS = ['sleeveOptions', 'zipOptions'];
 
-// Shared button styles (colors live in classes so hover states can override them).
-// Mobile: 44px tall (comfortable tap target), 14px text, semibold.
-// sm and up: back to the compact 36px / 12px look.
-const BTN =
-  'flex-1 flex items-center justify-center h-11 sm:h-9 px-4 sm:px-3 rounded-full text-[14px] sm:text-[12px] font-semibold sm:font-medium tracking-wide whitespace-nowrap transition-colors active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed';
-const BTN_OUTLINE = `${BTN} bg-white text-black border border-[#C9A227] hover:bg-[#F6EFD9] disabled:hover:bg-white`;
-const BTN_SOLID = `${BTN} bg-black text-[#C9A227] border border-[#C9A227] hover:bg-[#C9A227] hover:text-black disabled:hover:bg-black disabled:hover:text-[#C9A227]`;
+// ---------------------------------------------------------------------------
+// Action buttons (colors live in classes so hover states can override them)
+//   Mobile (< sm):  stacked, full width, 44px tall, 14px text, icon + label
+//   sm and up:      side by side, 40px tall, 12.5px text
+//   (the bag icon is hidden between sm and lg so the labels always fit)
+// ---------------------------------------------------------------------------
+const BTN_BASE =
+  'flex items-center justify-center gap-2 sm:flex-1 h-11 sm:h-10 px-4 sm:px-3 rounded-md text-[14px] sm:text-[12.5px] font-semibold sm:font-medium tracking-wide whitespace-nowrap transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed';
+
+const BTN_CART = `${BTN_BASE} bg-white text-[#2B2022] border border-[#D6B56D] hover:bg-[#F8D7DA]`;
+const BTN_CART_ADDED = `${BTN_BASE} bg-[#F8D7DA] text-[#2B2022] border border-[#D6B56D]`;
+const BTN_BUY = `${BTN_BASE} bg-[#D6B56D] text-[#2B2022] border border-[#D6B56D] hover:bg-[#C7A257] hover:border-[#C7A257]`;
+
+const ICON_CLASS = 'sm:hidden lg:inline-block shrink-0';
 
 export default function ProductCard({ product }) {
   const router = useRouter();
@@ -55,7 +68,15 @@ export default function ProductCard({ product }) {
   const [selectedSize, setSelectedSize] = useState(() =>
     sizes.length === 1 && sizes[0].stock > 0 ? sizes[0].size : ''
   );
+  const [added, setAdded] = useState(false);
   const selectedStock = sizes.find((s) => s.size === selectedSize)?.stock ?? 0;
+
+  // Brief "Added" confirmation on the cart button
+  useEffect(() => {
+    if (!added) return;
+    const t = setTimeout(() => setAdded(false), 1600);
+    return () => clearTimeout(t);
+  }, [added]);
 
   const needsProductPage = OPTION_FIELDS.some((k) => product[k]?.length > 0) || !hasSizes;
 
@@ -96,6 +117,7 @@ export default function ProductCard({ product }) {
   function handleAddToCart() {
     if (!requireSize()) return;
     addItem(buildItem());
+    setAdded(true);
   }
 
   function handleBuyNow() {
@@ -109,7 +131,7 @@ export default function ProductCard({ product }) {
       {/* Image */}
       <div className="relative">
         <Link href={href} className="block" aria-label={product.name}>
-          <div className="relative aspect-[3/4] overflow-hidden" style={{ background: GOLD_WASH }}>
+          <div className="relative aspect-[3/4] overflow-hidden" style={{ background: BLUSH }}>
             <Image
               src={image}
               alt={product.name}
@@ -132,7 +154,13 @@ export default function ProductCard({ product }) {
           ) : lowStock ? (
             <span
               className="text-[11px] font-semibold uppercase tracking-wider"
-              style={{ color: PAPER, background: INK, padding: '5px 12px', borderRadius: '999px' }}
+              style={{
+                color: INK,
+                background: BLUSH,
+                border: `1px solid ${GOLD}`,
+                padding: '4px 11px',
+                borderRadius: '999px',
+              }}
             >
               {totalStock} left
             </span>
@@ -153,12 +181,12 @@ export default function ProductCard({ product }) {
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           aria-pressed={wishlisted}
           className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full transition-transform active:scale-90"
-          style={{ background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(2px)' }}
+          style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(2px)' }}
         >
           <Heart
             className="w-4 h-4"
             strokeWidth={2}
-            style={{ color: wishlisted ? GOLD : INK }}
+            style={{ color: wishlisted ? GOLD_DEEP : INK }}
             fill={wishlisted ? GOLD : 'none'}
           />
         </button>
@@ -183,7 +211,7 @@ export default function ProductCard({ product }) {
             </span>
           )}
           {discountPct > 0 && (
-            <span className="text-xs font-medium" style={{ color: INK }}>
+            <span className="text-xs font-medium" style={{ color: GOLD_DEEP }}>
               {discountPct}% off
             </span>
           )}
@@ -206,9 +234,10 @@ export default function ProductCard({ product }) {
                 className="min-w-[30px] h-7 px-2 text-[11px] font-medium transition-colors"
                 style={{
                   borderRadius: '4px',
-                  border: `1px solid ${active ? INK : LINE}`,
-                  background: active ? INK : PAPER,
-                  color: soldOut ? DISABLED : active ? PAPER : INK,
+                  border: `1px solid ${active ? GOLD : LINE}`,
+                  background: active ? BLUSH : PAPER,
+                  color: soldOut ? DISABLED : INK,
+                  fontWeight: active ? 600 : 500,
                   textDecoration: soldOut ? 'line-through' : 'none',
                   cursor: soldOut ? 'not-allowed' : 'pointer',
                 }}
@@ -226,21 +255,31 @@ export default function ProductCard({ product }) {
           <button
             type="button"
             disabled
-            className="flex-1 h-11 sm:h-9 rounded-full text-[14px] sm:text-[12px] font-medium tracking-wide cursor-not-allowed"
+            className={`${BTN_BASE} w-full`}
             style={{ background: LINE, color: INK_SOFT }}
           >
             Out of stock
           </button>
         ) : needsProductPage ? (
-          <Link href={href} className={BTN_SOLID}>
+          <Link href={href} className={BTN_BUY}>
             Choose options
           </Link>
         ) : (
           <>
-            <button type="button" onClick={handleAddToCart} className={BTN_OUTLINE}>
-              Add to cart
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              className={added ? BTN_CART_ADDED : BTN_CART}
+            >
+              {added ? (
+                <Check size={16} strokeWidth={2} className={ICON_CLASS} />
+              ) : (
+                <ShoppingBag size={16} strokeWidth={1.5} className={ICON_CLASS} />
+              )}
+              {added ? 'Added' : 'Add to cart'}
             </button>
-            <button type="button" onClick={handleBuyNow} className={BTN_SOLID}>
+
+            <button type="button" onClick={handleBuyNow} className={BTN_BUY}>
               Buy now
             </button>
           </>

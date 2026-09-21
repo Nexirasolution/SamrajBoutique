@@ -3,11 +3,15 @@
 import { useEffect, useState } from 'react';
 import { Tag, Truck } from 'lucide-react';
 
-// Same tokens as Navbar — keep these two in sync if you tweak the palette.
-// Black announcement bar with gold text.
-const BAR = '#000000';
-const GOLD = '#C9A227';
-const GOLD_FAINT = 'rgba(201, 162, 39, 0.7)';
+// Theme: Light Blush + Champagne Gold — keep in sync with ProductCard,
+// ProductPage and Navbar. Blush announcement bar; champagne gold is too
+// light to read as small text on blush, so text is warm ink and gold is
+// used for the rule, separators and code underline.
+const BAR = '#F8D7DA';        // Light Blush
+const INK = '#2B2022';        // text
+const INK_SOFT = '#6E5F61';   // secondary text (min-order note)
+const GOLD = '#D6B56D';       // Champagne Gold — rule, separators, underline
+const GOLD_DEEP = '#8A6A24';  // icons / coupon code (readable on blush)
 
 // A quiet serif, matched to the wordmark used elsewhere on the site,
 // so the marquee reads as part of the same brand rather than generic UI text.
@@ -38,7 +42,10 @@ export default function CouponMarquee() {
   const items = [...allItems, ...allItems];
 
   return (
-    <div className="relative overflow-hidden py-2" style={{ background: BAR }}>
+    <div
+      className="relative overflow-hidden py-2"
+      style={{ background: BAR, borderBottom: `1px solid ${GOLD}` }}
+    >
       {/* Fade edges */}
       <div
         className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 z-10"
@@ -54,29 +61,29 @@ export default function CouponMarquee() {
           <span
             key={i}
             className="inline-flex items-center gap-2 mx-8 text-[12px] tracking-[0.3px]"
-            style={{ color: GOLD, fontFamily: FONT }}
+            style={{ color: INK, fontFamily: FONT }}
           >
-            {i > 0 && <span className="mr-4" style={{ color: GOLD_FAINT }}>—</span>}
+            {i > 0 && <span className="mr-4" style={{ color: GOLD }}>—</span>}
 
             {c.type === 'freeshipping' ? (
               <>
-                <Truck size={12} strokeWidth={1.25} className="shrink-0" style={{ color: GOLD }} />
+                <Truck size={12} strokeWidth={1.5} className="shrink-0" style={{ color: GOLD_DEEP }} />
                 Free shipping on orders above ₹{c.minOrderValue}
               </>
             ) : (
               <>
-                <Tag size={12} strokeWidth={1.25} className="shrink-0" style={{ color: GOLD }} />
+                <Tag size={12} strokeWidth={1.5} className="shrink-0" style={{ color: GOLD_DEEP }} />
                 Use{' '}
                 <span
                   className="italic px-1.5"
-                  style={{ color: GOLD, borderBottom: `1px solid ${GOLD}` }}
+                  style={{ color: GOLD_DEEP, borderBottom: `1px solid ${GOLD}` }}
                 >
                   {c.code}
                 </span>
                 {' '}for{' '}
                 {c.type === 'percent' ? `${c.value}% off` : `₹${c.value} off`}
                 {c.minOrderValue > 0 && (
-                  <span style={{ color: GOLD_FAINT }}> on orders above ₹{c.minOrderValue}</span>
+                  <span style={{ color: INK_SOFT }}> on orders above ₹{c.minOrderValue}</span>
                 )}
               </>
             )}

@@ -18,18 +18,20 @@ import toast from 'react-hot-toast';
 const display = Fraunces({ subsets: ['latin'], weight: ['400', '500'], style: ['normal', 'italic'], variable: '--font-display' });
 const body = Inter({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-body' });
 
-// Design tokens — white, black and gold. Black carries text and primary
-// actions, gold is the single accent, and one hairline tone separates
-// sections. No pills or drop shadows.
+// Design tokens — Light Blush + Champagne Gold. Champagne gold is too light
+// to carry small text on white, so text stays a warm dark ink and gold is
+// used for rules, fills and accents (with a deeper gold for gold-coloured
+// text). Blush is the soft surface tone. No pills or drop shadows.
 const PAPER = '#FFFFFF';
-const BLACK = '#000000';
-const GREY = '#5E5E5E';          // secondary text on white
-const NEUTRAL = '#8A8A8A';       // struck-through prices, verified label
-const LINE = '#E7E2D6';          // hairlines
-const GOLD = '#C9A24B';          // stars, underlines, decorative accents
-const GOLD_DEEP = '#8C6A12';     // gold text on white (readable contrast)
-const GOLD_BRIGHT = '#E0BC5F';   // gold on black
-const GOLD_LIGHT = '#FBF6E9';    // very light gold surface (image wells)
+const INK = '#2B2022';           // primary text and icons (warm near-black)
+const GREY = '#6E5F61';          // secondary text on white
+const NEUTRAL = '#9A8B8D';       // struck-through prices, verified label
+const LINE = '#F0DADC';          // hairlines (blush-tinted)
+const BLUSH = '#F8D7DA';         // Light Blush — badges, sticky bar
+const BLUSH_LIGHT = '#FDF1F2';   // very light blush surface (image wells)
+const GOLD = '#D6B56D';          // Champagne Gold — rules, fills, accents
+const GOLD_HOVER = '#C7A257';    // slightly deeper gold for hover states
+const GOLD_DEEP = '#8A6A24';     // gold text on white (readable contrast)
 
 export default function ProductPage() {
   const { slug } = useParams();
@@ -70,7 +72,7 @@ export default function ProductPage() {
     return (
       <div className={`${body.className} min-h-screen flex items-center justify-center`} style={{ background: PAPER }}>
         <div className="flex flex-col items-center gap-3" style={{ color: GREY }}>
-          <div className="w-6 h-6 border rounded-full animate-spin" style={{ borderColor: LINE, borderTopColor: GOLD }} />
+          <div className="w-6 h-6 border rounded-full animate-spin" style={{ borderColor: BLUSH, borderTopColor: GOLD }} />
           <p className="text-sm">Loading product…</p>
         </div>
       </div>
@@ -231,7 +233,7 @@ export default function ProductPage() {
           <div className="sm:sticky sm:top-10 sm:self-start">
             {/* Mobile: fixed viewport-relative height so the fold clears the
                 gallery quickly. Desktop: original aspect-ratio box. */}
-            <div className="relative w-full h-[38vh] sm:h-auto sm:aspect-[4/5] overflow-hidden" style={{ background: GOLD_LIGHT, borderRadius: '4px' }}>
+            <div className="relative w-full h-[38vh] sm:h-auto sm:aspect-[4/5] overflow-hidden" style={{ background: BLUSH_LIGHT, borderRadius: '4px' }}>
               {images[activeImage] && (
                 <Image
                   src={images[activeImage]}
@@ -250,20 +252,20 @@ export default function ProductPage() {
                     className="absolute left-0 top-0 bottom-0 w-1/4 flex items-center justify-start pl-2 opacity-0 hover:opacity-100 transition-opacity"
                     aria-label="Previous image"
                   >
-                    <ChevronLeft size={18} strokeWidth={1.5} style={{ color: BLACK }} />
+                    <ChevronLeft size={18} strokeWidth={1.5} style={{ color: INK }} />
                   </button>
                   <button
                     onClick={nextImage}
                     className="absolute right-0 top-0 bottom-0 w-1/4 flex items-center justify-end pr-2 opacity-0 hover:opacity-100 transition-opacity"
                     aria-label="Next image"
                   >
-                    <ChevronRight size={18} strokeWidth={1.5} style={{ color: BLACK }} />
+                    <ChevronRight size={18} strokeWidth={1.5} style={{ color: INK }} />
                   </button>
 
                   {/* Plain numeric counter instead of dots or a pill */}
                   <div
                     className="absolute bottom-3 right-3 text-[11px] font-medium tracking-wide"
-                    style={{ color: BLACK }}
+                    style={{ color: INK }}
                   >
                     {String(activeImage + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
                   </div>
@@ -302,7 +304,7 @@ export default function ProductPage() {
                 className="flex items-center gap-1.5 text-xs font-medium"
                 style={{ color: wished ? GOLD_DEEP : GREY }}
               >
-                <Heart size={14} strokeWidth={1.5} fill={wished ? GOLD : 'none'} style={{ color: wished ? GOLD : undefined }} />
+                <Heart size={14} strokeWidth={1.5} fill={wished ? GOLD : 'none'} style={{ color: wished ? GOLD_DEEP : undefined }} />
                 {wished ? 'Saved' : 'Save'}
               </button>
               <button onClick={handleShare} className="flex items-center gap-1.5 text-xs font-medium" style={{ color: GREY }}>
@@ -322,16 +324,17 @@ export default function ProductPage() {
 
             <h1
               className={`${display.className} text-[20px] sm:text-[32px] leading-[1.15]`}
-              style={{ color: BLACK, fontWeight: 400, letterSpacing: '-0.01em' }}
+              style={{ color: INK, fontWeight: 400, letterSpacing: '-0.01em' }}
             >
               {product.name}
             </h1>
 
-            {/* Ready to Ship badge — highlighted, sits just under the title */}
+            {/* Ready to Ship badge — blush fill with a champagne hairline,
+                sits just under the title */}
             {product.isReadyToShip && (
               <span
                 className="inline-block mt-2 sm:mt-2.5 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide w-fit"
-                style={{ background: BLACK, color: GOLD_BRIGHT, borderRadius: '4px' }}
+                style={{ background: BLUSH, color: INK, border: `1px solid ${GOLD}`, borderRadius: '4px' }}
               >
                 Ready to Ship
               </span>
@@ -339,7 +342,7 @@ export default function ProductPage() {
 
             {/* <div className="flex items-center gap-1.5 mt-1.5 sm:mt-2.5 text-sm" style={{ color: GREY }}>
               <Star size={13} strokeWidth={1.5} style={{ fill: GOLD, color: GOLD }} />
-              <span style={{ color: BLACK }}>{product.rating?.toFixed?.(1) ?? product.rating}</span>
+              <span style={{ color: INK }}>{product.rating?.toFixed?.(1) ?? product.rating}</span>
               <span>· {product.reviewCount} reviews</span>
             </div> */}
 
@@ -347,7 +350,7 @@ export default function ProductPage() {
                 pant/shawl add-ons are currently selected, so it updates
                 live as the customer changes those selectors below. */}
             <div className="flex items-baseline gap-3 mt-3 sm:mt-6">
-              <span className={`${display.className} text-[22px] sm:text-[26px]`} style={{ color: BLACK, fontWeight: 500 }}>
+              <span className={`${display.className} text-[22px] sm:text-[26px]`} style={{ color: INK, fontWeight: 500 }}>
                 {formatINR(unitPrice)}
               </span>
               {unitCompareAtPrice > unitPrice && (
@@ -371,7 +374,7 @@ export default function ProductPage() {
                 shown on desktop where vertical space isn't at a premium */}
             {product.fabric && (
               <p className="hidden sm:block text-sm mt-3" style={{ color: GREY }}>
-                Fabric <span style={{ color: BLACK }}>— {product.fabric}</span>
+                Fabric <span style={{ color: INK }}>— {product.fabric}</span>
               </p>
             )}
 
@@ -407,12 +410,12 @@ export default function ProductPage() {
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   className="text-base leading-none"
-                  style={{ color: BLACK }}
+                  style={{ color: INK }}
                   aria-label="Decrease quantity"
                 >
                   −
                 </button>
-                <span className="text-sm font-medium w-4 text-center" style={{ color: BLACK }}>{qty}</span>
+                <span className="text-sm font-medium w-4 text-center" style={{ color: INK }}>{qty}</span>
                 <button
                   onClick={() => setQty((q) => {
                     const cap = stockCap();
@@ -420,7 +423,7 @@ export default function ProductPage() {
                   })}
                   disabled={(() => { const cap = stockCap(); return !!activeSize && cap !== Infinity && qty >= cap; })()}
                   className="text-base leading-none disabled:opacity-30 disabled:cursor-not-allowed"
-                  style={{ color: BLACK }}
+                  style={{ color: INK }}
                   aria-label="Increase quantity"
                 >
                   +
@@ -437,21 +440,23 @@ export default function ProductPage() {
               )}
             </div>
 
-            {/* CTAs — hidden on mobile in favor of the sticky bar below */}
+            {/* CTAs — hidden on mobile in favor of the sticky bar below.
+                Primary = champagne gold fill; secondary = white with a gold
+                hairline that washes to blush on hover. */}
             <div className="hidden sm:flex flex-col gap-2.5 mt-8">
               <button
                 onClick={handleBuyNow}
                 disabled={sizeOutOfStock}
-                className="w-full flex items-center justify-center gap-2 font-medium py-3.5 transition-opacity active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: BLACK, color: GOLD_BRIGHT, border: `1px solid ${BLACK}`, borderRadius: '4px' }}
+                className="w-full flex items-center justify-center gap-2 font-medium py-3.5 transition-colors active:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#C7A257]"
+                style={{ background: GOLD, color: INK, border: `1px solid ${GOLD}`, borderRadius: '4px' }}
               >
-                <Zap size={16} fill={GOLD_BRIGHT} /> {sizeOutOfStock ? 'Out of Stock' : 'Buy Now'}
+                <Zap size={16} fill={INK} /> {sizeOutOfStock ? 'Out of Stock' : 'Buy Now'}
               </button>
               <button
                 onClick={handleAddToCart}
                 disabled={sizeOutOfStock}
-                className="w-full flex items-center justify-center gap-2 font-medium py-3.5 transition-opacity active:opacity-70 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ border: `1px solid ${BLACK}`, color: BLACK, background: PAPER, borderRadius: '4px' }}
+                className="w-full flex items-center justify-center gap-2 font-medium py-3.5 transition-colors active:opacity-70 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F8D7DA]"
+                style={{ border: `1px solid ${GOLD}`, color: INK, background: PAPER, borderRadius: '4px' }}
               >
                 <ShoppingBag size={15} /> {sizeOutOfStock ? 'Out of Stock' : 'Add to Cart'}
               </button>
@@ -459,7 +464,7 @@ export default function ProductPage() {
 
             {product.description && (
               <div className="mt-6 pt-6 sm:mt-8 sm:pt-8 text-sm leading-relaxed" style={{ color: GREY, borderTop: `1px solid ${LINE}` }}>
-                <h3 className="text-[11px] font-medium uppercase tracking-[0.18em] mb-3" style={{ color: BLACK }}>
+                <h3 className="text-[11px] font-medium uppercase tracking-[0.18em] mb-3" style={{ color: INK }}>
                   Description
                 </h3>
                 <p>{product.description}</p>
@@ -473,7 +478,7 @@ export default function ProductPage() {
         {/* Reviews */}
         {/* {reviews?.length > 0 && (
           <div className="mt-20 sm:mt-28">
-            <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] mb-8 pb-3" style={{ color: BLACK, borderBottom: `1px solid ${GOLD}` }}>
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] mb-8 pb-3" style={{ color: INK, borderBottom: `1px solid ${GOLD}` }}>
               Customer Reviews
             </h2>
             <div className="grid sm:grid-cols-2 gap-x-12 gap-y-8">
@@ -481,13 +486,13 @@ export default function ProductPage() {
                 <div key={r._id} className="pt-5" style={{ borderTop: `1px solid ${LINE}` }}>
                   <div className="flex items-center gap-1 mb-2 text-xs" style={{ color: GREY }}>
                     <Star size={12} strokeWidth={1.5} style={{ fill: GOLD, color: GOLD }} />
-                    <span style={{ color: BLACK }}>{r.rating}</span>
+                    <span style={{ color: INK }}>{r.rating}</span>
                     {r.isVerifiedPurchase && (
                       <span className="ml-1" style={{ color: NEUTRAL }}>· Verified purchase</span>
                     )}
                   </div>
 
-                  <p className={`${display.className} text-sm leading-relaxed`} style={{ color: BLACK }}>
+                  <p className={`${display.className} text-sm leading-relaxed`} style={{ color: INK }}>
                     {r.comment}
                   </p> */}
 
@@ -499,7 +504,7 @@ export default function ProductPage() {
                           key={i}
                           onClick={() => setLightboxImg(img)}
                           className="relative w-14 h-14 overflow-hidden shrink-0"
-                          style={{ borderRadius: '3px', background: GOLD_LIGHT }}
+                          style={{ borderRadius: '3px', background: BLUSH_LIGHT }}
                         >
                           <Image src={img} alt="" fill className="object-cover" sizes="56px" />
                         </button>
@@ -517,7 +522,7 @@ export default function ProductPage() {
         {/* Related */}
         {related?.length > 0 && (
           <div className="mt-20 sm:mt-28">
-            <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] mb-8 pb-3" style={{ color: BLACK, borderBottom: `1px solid ${GOLD}` }}>
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.18em] mb-8 pb-3" style={{ color: INK, borderBottom: `1px solid ${GOLD}` }}>
               You may also like
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-10">
@@ -528,18 +533,18 @@ export default function ProductPage() {
       </div>
 
       {/* Sticky mobile buy bar — portaled directly to <body> so no ancestor
-          can break its fixed positioning. */}
+          can break its fixed positioning. Blush surface with a gold rule. */}
       {mounted && data?.product && createPortal(
         <div
           className="sm:hidden fixed bottom-0 left-0 right-0 flex items-center gap-3 px-5 py-3"
-          style={{ background: PAPER, borderTop: `1px solid ${GOLD}`, zIndex: 9999 }}
+          style={{ background: BLUSH, borderTop: `1px solid ${GOLD}`, zIndex: 9999 }}
         >
           <div className="shrink-0">
-            <p className="text-base font-medium leading-none" style={{ color: BLACK }}>
+            <p className="text-base font-medium leading-none" style={{ color: INK }}>
               {formatINR(unitPrice)}
             </p>
             {unitCompareAtPrice > unitPrice && (
-              <p className="text-[11px] line-through leading-none mt-1" style={{ color: NEUTRAL }}>
+              <p className="text-[11px] line-through leading-none mt-1" style={{ color: GREY }}>
                 {formatINR(unitCompareAtPrice)}
               </p>
             )}
@@ -548,7 +553,7 @@ export default function ProductPage() {
             onClick={handleAddToCart}
             disabled={sizeOutOfStock}
             className="flex-1 flex items-center justify-center gap-1.5 font-medium py-2.5 text-sm disabled:opacity-40"
-            style={{ border: `1px solid ${BLACK}`, color: BLACK, background: PAPER, borderRadius: '4px' }}
+            style={{ border: `1px solid ${GOLD}`, color: INK, background: PAPER, borderRadius: '4px' }}
           >
             <ShoppingBag size={15} /> Cart
           </button>
@@ -556,9 +561,9 @@ export default function ProductPage() {
             onClick={handleBuyNow}
             disabled={sizeOutOfStock}
             className="flex-1 flex items-center justify-center gap-1.5 font-medium py-2.5 text-sm disabled:opacity-40"
-            style={{ background: BLACK, color: GOLD_BRIGHT, border: `1px solid ${BLACK}`, borderRadius: '4px' }}
+            style={{ background: GOLD, color: INK, border: `1px solid ${GOLD}`, borderRadius: '4px' }}
           >
-            <Zap size={15} fill={GOLD_BRIGHT} /> {sizeOutOfStock ? 'Sold out' : 'Buy now'}
+            <Zap size={15} fill={INK} /> {sizeOutOfStock ? 'Sold out' : 'Buy now'}
           </button>
         </div>,
         document.body
@@ -569,7 +574,7 @@ export default function ProductPage() {
         <div
           onClick={() => setLightboxImg(null)}
           className="fixed inset-0 flex items-center justify-center p-6"
-          style={{ background: 'rgba(0,0,0,0.88)', zIndex: 10000 }}
+          style={{ background: 'rgba(43,32,34,0.88)', zIndex: 10000 }}
         >
           <div className="relative w-full max-w-md aspect-square" onClick={(e) => e.stopPropagation()}>
             <button
@@ -592,7 +597,7 @@ export default function ProductPage() {
         <div
           onClick={() => setSizeChartOpen(false)}
           className="fixed inset-0 flex items-center justify-center p-6"
-          style={{ background: 'rgba(0,0,0,0.88)', zIndex: 10000 }}
+          style={{ background: 'rgba(43,32,34,0.88)', zIndex: 10000 }}
         >
           <div className="relative w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <button
@@ -620,19 +625,19 @@ export default function ProductPage() {
                     className="absolute left-0 top-0 bottom-0 w-1/4 flex items-center justify-start pl-2"
                     aria-label="Previous size chart image"
                   >
-                    <ChevronLeft size={22} strokeWidth={1.5} style={{ color: BLACK }} />
+                    <ChevronLeft size={22} strokeWidth={1.5} style={{ color: INK }} />
                   </button>
                   <button
                     onClick={nextSizeChart}
                     className="absolute right-0 top-0 bottom-0 w-1/4 flex items-center justify-end pr-2"
                     aria-label="Next size chart image"
                   >
-                    <ChevronRight size={22} strokeWidth={1.5} style={{ color: BLACK }} />
+                    <ChevronRight size={22} strokeWidth={1.5} style={{ color: INK }} />
                   </button>
 
                   <div
                     className="absolute bottom-3 right-3 text-[11px] font-medium tracking-wide"
-                    style={{ color: BLACK }}
+                    style={{ color: INK }}
                   >
                     {String(sizeChartIndex + 1).padStart(2, '0')} / {String(sizeChartImages.length).padStart(2, '0')}
                   </div>
