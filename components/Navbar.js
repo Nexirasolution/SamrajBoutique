@@ -9,11 +9,15 @@ import { useCart } from './CartContext';
 import { useWishlist } from './WhishlistContext';
 import CouponMarquee from './CouponMarquee';
 
+// Theme: White + Wine accent — keep in sync with CouponMarquee,
+// ProductCard and ProductPage. White navbar; wine used for the active
+// underline, hover states and badges; gold kept only as a hairline accent.
+const PAPER = '#FFFFFF';
 const INK = '#000000';
 const INK_SOFT = '#6B6B6B';
-const GOLD = '#C9A227';
+const WINE = '#5E1F2E';       // primary accent — underlines, badges, borders
+const GOLD = '#D6B56D';       // secondary accent — shop-menu top rule
 const LINE = '#E8E8E8';
-const PAPER = '#FFFFFF';
 
 const SHOP_GROUPS = [
   { key: 'bestseller', label: 'Best Sellers', qs: 'flag=bestseller' },
@@ -21,11 +25,11 @@ const SHOP_GROUPS = [
   { key: 'newarrival', label: 'New Arrivals', qs: 'flag=newarrival' },
 ];
 
-// Gold text is hard to read on white, so hover/active states use a gold
-// underline instead of a gold text color.
+// Wine text is hard to read at small sizes on white next to black ink,
+// so hover/active states use a wine underline instead of a wine text color.
 function underlineOn(el) {
   el.style.textDecoration = 'underline';
-  el.style.textDecorationColor = GOLD;
+  el.style.textDecorationColor = WINE;
   el.style.textUnderlineOffset = '4px';
 }
 function underlineOff(el) {
@@ -138,7 +142,7 @@ export default function Navbar() {
                     style={{
                       color: INK,
                       textDecoration: shopOpen ? 'underline' : 'none',
-                      textDecorationColor: GOLD,
+                      textDecorationColor: WINE,
                       textDecorationThickness: '2px',
                       textUnderlineOffset: '6px',
                     }}
@@ -149,7 +153,7 @@ export default function Navbar() {
                   {shopOpen && categories.length > 0 && (
                     <div className="absolute left-0 top-full pt-5" style={{ width: '620px' }}>
                       <div
-                        style={{ background: PAPER, borderTop: `1px solid ${GOLD}` }}
+                        style={{ background: PAPER, borderTop: `1px solid ${WINE}`, boxShadow: '0 12px 24px rgba(0,0,0,0.08)' }}
                         className="py-6 px-6 grid grid-cols-3 gap-8 max-h-[70vh] overflow-y-auto"
                       >
                         {SHOP_GROUPS.map((group) => (
@@ -212,12 +216,11 @@ export default function Navbar() {
             </div>
 
             {/* Center: logo */}
-           {/* Center: logo */}
-<Link href="/" className="flex items-center justify-self-center">
-  <div className="relative w-20 h-20 sm:w-24 sm:h-24">
-    <Image src="/logo.png" alt="Samraj Boutique" fill className="object-contain" priority />
-  </div>
-</Link>
+            <Link href="/" className="flex items-center justify-self-center">
+              <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                <Image src="/logo.png" alt="Samraj Boutique" fill className="object-contain" priority />
+              </div>
+            </Link>
 
             {/* Right: search + wishlist + cart */}
             <div className="flex items-center gap-2.5 justify-self-end">
@@ -240,7 +243,7 @@ export default function Navbar() {
                 {wishlistCount > 0 && (
                   <span
                     className="absolute -top-1 -right-1 text-[9px] font-semibold rounded-full w-[16px] h-[16px] flex items-center justify-center"
-                    style={{ background: GOLD, color: INK }}
+                    style={{ background: WINE, color: PAPER }}
                   >
                     {wishlistCount > 9 ? '9+' : wishlistCount}
                   </span>
@@ -257,7 +260,7 @@ export default function Navbar() {
                 {count > 0 && (
                   <span
                     className="absolute -top-1 -right-1 text-[9px] font-semibold rounded-full w-[16px] h-[16px] flex items-center justify-center"
-                    style={{ background: GOLD, color: INK }}
+                    style={{ background: WINE, color: PAPER }}
                   >
                     {count > 9 ? '9+' : count}
                   </span>
@@ -335,8 +338,8 @@ export default function Navbar() {
                   className="w-full flex items-center justify-between py-3 pl-3 text-[13px] tracking-wide uppercase"
                   style={{
                     color: mobileGroupOpen === group.key ? INK : INK_SOFT,
-                    // Gold marker on the open group; inset shadow so nothing shifts
-                    boxShadow: mobileGroupOpen === group.key ? `inset 2px 0 0 ${GOLD}` : 'none',
+                    // Wine marker on the open group; inset shadow so nothing shifts
+                    boxShadow: mobileGroupOpen === group.key ? `inset 2px 0 0 ${WINE}` : 'none',
                   }}
                   onClick={() => setMobileGroupOpen((v) => (v === group.key ? null : group.key))}
                 >
@@ -435,7 +438,7 @@ export default function Navbar() {
               {wishlistCount > 0 && (
                 <span
                   className="text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"
-                  style={{ background: GOLD, color: INK }}
+                  style={{ background: WINE, color: PAPER }}
                 >
                   {wishlistCount > 9 ? '9+' : wishlistCount}
                 </span>
@@ -455,7 +458,7 @@ export default function Navbar() {
               {count > 0 && (
                 <span
                   className="text-[10px] font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"
-                  style={{ background: GOLD, color: INK }}
+                  style={{ background: WINE, color: PAPER }}
                 >
                   {count > 9 ? '9+' : count}
                 </span>

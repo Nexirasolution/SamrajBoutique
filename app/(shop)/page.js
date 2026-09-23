@@ -19,7 +19,8 @@ import { ArrowRight, Tag } from 'lucide-react';
 // Design tokens — Light Blush + Champagne Gold, shared with ProductCard,
 // ProductPage and CouponMarquee. Champagne gold is too light for small text,
 // so text stays a warm ink and gold is used for borders, fills and accents.
-// The CTA button classes below use the same hex values — keep them in sync.
+// Wine is used for the primary "Shop the collection" CTA only — keep the
+// hex in sync with ProductCard's button colors.
 const INK = '#2B2022';          // primary text (warm near-black)
 const INK_SOFT = '#6E5F61';     // secondary text
 const BLUSH = '#F8D7DA';        // Light Blush
@@ -27,6 +28,7 @@ const BLUSH_LIGHT = '#FDF1F2';  // very light blush surface
 const GOLD = '#D6B56D';         // Champagne Gold
 const GOLD_DEEP = '#8A6A24';    // gold used as text (readable contrast)
 const HAIRLINE = '#F0DADC';     // blush-tinted hairlines
+const WINE = '#7B2D4A';         // Wine — primary CTA
 
 // Minimalist type: a clean, quiet sans. Headings are bold + tracked out;
 // body copy stays light so the boldness reads as intentional, not noisy.
@@ -189,7 +191,7 @@ export default async function HomePage() {
         {/* Colors live in classes (not inline style) so the hover state can override them */}
         <Link
           href="/products"
-          className="inline-block mt-10 px-8 py-3 text-[12px] font-bold tracking-[2px] uppercase transition-colors bg-[#D6B56D] text-[#2B2022] border border-[#D6B56D] hover:bg-[#C7A257] hover:border-[#C7A257]"
+          className="inline-block mt-10 px-8 py-3 text-[12px] font-bold tracking-[2px] uppercase transition-colors bg-[#7B2D4A] text-white border border-[#7B2D4A] hover:bg-[#651F3B] hover:border-[#651F3B]"
           style={{ fontFamily: FONT_SANS }}
         >
           Shop the collection

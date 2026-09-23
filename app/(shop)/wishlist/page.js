@@ -11,6 +11,8 @@ const INK_SOFT = '#6B6B6B';
 const GOLD = '#C9A227';
 const GOLD_WASH = '#F6EFD9';
 const PAPER = '#FFFFFF';
+const WINE = '#7B2D4A';
+const WINE_DEEP = '#651F3B';
 const FONT_SERIF = "Georgia, 'Times New Roman', serif";
 
 export default function WishlistPage() {
@@ -78,8 +80,8 @@ export default function WishlistPage() {
           <p className="text-sm mb-5" style={{ color: INK_SOFT }}>Your wishlist is empty</p>
           <Link
             href="/"
-            className="inline-block px-6 py-3 text-sm font-medium transition-opacity active:opacity-80"
-            style={{ background: INK, color: GOLD, border: `1px solid ${GOLD}`, borderRadius: '4px' }}
+            className="inline-block px-6 py-3 text-sm font-medium transition-colors hover:bg-[#651F3B] active:opacity-80"
+            style={{ background: WINE, color: PAPER, border: `1px solid ${WINE}`, borderRadius: '4px' }}
           >
             Start Shopping
           </Link>

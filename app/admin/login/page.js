@@ -10,6 +10,8 @@ const INK_SOFT = '#6B6B6B';
 const GOLD = '#C9A227';
 const LINE = '#DADADA';
 const PAPER = '#FFFFFF';
+const WINE = '#7B2D4A';
+const WINE_DEEP = '#651F3B';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -72,8 +74,8 @@ export default function AdminLoginPage() {
 
         <button
           disabled={loading}
-          className="w-full mt-5 py-2.5 text-sm font-medium transition-opacity active:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{ background: INK, color: GOLD, border: `1px solid ${GOLD}`, borderRadius: '4px' }}
+          className="w-full mt-5 py-2.5 text-sm font-medium transition-colors hover:bg-[#651F3B] active:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ background: WINE, color: '#FFFFFF', border: `1px solid ${WINE}`, borderRadius: '4px' }}
         >
           {loading ? 'Signing in…' : 'Sign In'}
         </button>

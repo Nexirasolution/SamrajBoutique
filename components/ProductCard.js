@@ -11,16 +11,22 @@ import { getVariantTotalStock } from '@/lib/stock';
 import { useWishlist } from '@/components/WhishlistContext'; // adjust path as needed
 import { useCart } from '@/components/CartContext';
 
-// Theme: Light Blush + Champagne Gold.
-// Champagne gold is too light to carry small text on white, so text stays a
-// warm dark ink and gold is used for borders, fills and accents.
+// Theme: Light Blush + Champagne Gold + Wine accent.
+// Champagne gold is too light to carry small text on white, so general text
+// stays a warm dark ink. Wine is now the primary action color (buttons);
+// gold is kept for the Sale badge; pink is used for the low-stock badge.
 // The button classes below use the same hex values — keep them in sync.
 const INK = '#2B2022';         // primary text (warm near-black)
 const INK_SOFT = '#7A6A6C';    // secondary text, struck-through price
 const BLUSH = '#F8D7DA';       // Light Blush
 const BLUSH_LIGHT = '#FDF1F2'; // image well
-const GOLD = '#D6B56D';        // Champagne Gold
+const GOLD = '#D6B56D';        // Champagne Gold — used for the Sale badge
 const GOLD_DEEP = '#8A6A24';   // gold used as text on white (readable)
+const WINE = '#7B2D4A';        // Wine — buttons, wishlist-active, discount %
+const WINE_SOFT = '#F3DEE5';   // pale wine — added-state button fill
+const WINE_HOVER = 'rgba(123, 45, 74, 0.08)'; // wine tint for cart-button hover
+const PINK = '#D6336C';        // low-stock "X left" badge
+const PINK_LIGHT = '#FCE4EC';  // low-stock badge background
 const LINE = '#F0DADC';        // hairlines
 const DISABLED = '#C9B9BB';
 const PAPER = '#FFFFFF';
@@ -40,9 +46,9 @@ const OPTION_FIELDS = ['sleeveOptions', 'zipOptions'];
 const BTN_BASE =
   'flex items-center justify-center gap-2 sm:flex-1 h-11 sm:h-10 px-4 sm:px-3 rounded-md text-[14px] sm:text-[12.5px] font-semibold sm:font-medium tracking-wide whitespace-nowrap transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed';
 
-const BTN_CART = `${BTN_BASE} bg-white text-[#2B2022] border border-[#D6B56D] hover:bg-[#F8D7DA]`;
-const BTN_CART_ADDED = `${BTN_BASE} bg-[#F8D7DA] text-[#2B2022] border border-[#D6B56D]`;
-const BTN_BUY = `${BTN_BASE} bg-[#D6B56D] text-[#2B2022] border border-[#D6B56D] hover:bg-[#C7A257] hover:border-[#C7A257]`;
+const BTN_CART = `${BTN_BASE} bg-white text-[#7B2D4A] border border-[#7B2D4A] hover:bg-[#F3DEE5]`;
+const BTN_CART_ADDED = `${BTN_BASE} bg-[#F3DEE5] text-[#7B2D4A] border border-[#7B2D4A]`;
+const BTN_BUY = `${BTN_BASE} bg-[#7B2D4A] text-white border border-[#7B2D4A] hover:bg-[#651F3B] hover:border-[#651F3B]`;
 
 const ICON_CLASS = 'sm:hidden lg:inline-block shrink-0';
 
@@ -155,9 +161,9 @@ export default function ProductCard({ product }) {
             <span
               className="text-[11px] font-semibold uppercase tracking-wider"
               style={{
-                color: INK,
-                background: BLUSH,
-                border: `1px solid ${GOLD}`,
+                color: PINK,
+                background: PINK_LIGHT,
+                border: `1px solid ${PINK}`,
                 padding: '4px 11px',
                 borderRadius: '999px',
               }}
@@ -186,8 +192,8 @@ export default function ProductCard({ product }) {
           <Heart
             className="w-4 h-4"
             strokeWidth={2}
-            style={{ color: wishlisted ? GOLD_DEEP : INK }}
-            fill={wishlisted ? GOLD : 'none'}
+            style={{ color: wishlisted ? WINE : INK }}
+            fill={wishlisted ? WINE : 'none'}
           />
         </button>
       </div>
@@ -234,8 +240,8 @@ export default function ProductCard({ product }) {
                 className="min-w-[30px] h-7 px-2 text-[11px] font-medium transition-colors"
                 style={{
                   borderRadius: '4px',
-                  border: `1px solid ${active ? GOLD : LINE}`,
-                  background: active ? BLUSH : PAPER,
+                  border: `1px solid ${active ? WINE : LINE}`,
+                  background: active ? WINE_SOFT : PAPER,
                   color: soldOut ? DISABLED : INK,
                   fontWeight: active ? 600 : 500,
                   textDecoration: soldOut ? 'line-through' : 'none',

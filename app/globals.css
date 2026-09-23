@@ -6,11 +6,11 @@
   --font-display: 'Poppins', sans-serif;
   --font-body: 'Poppins', sans-serif;
 
-  /* Brand Colors — white + peach minimalist */
-  --brand-peach: #D9946A;
-  --brand-peach-dark: #C17F55;
-  --brand-peach-light: #FBE8D9;
-  --brand-border: #EEE3DA;
+  /* Brand Colors — white + wine minimalist */
+  --brand-peach: #7B2D4A;        /* Wine (was peach #D9946A) */
+  --brand-peach-dark: #651F3B;   /* Wine — hover/darker (was #C17F55) */
+  --brand-peach-light: #F3DEE5;  /* Pale wine wash (was #FBE8D9) */
+  --brand-border: #E7D3D9;       /* Wine-tinted border (was #EEE3DA) */
   --brand-ink: #241B21;
 }
 
@@ -27,7 +27,7 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Scrollbar — peach thumb on white track */
+/* Scrollbar — wine thumb on white track */
 ::-webkit-scrollbar {
   height: 6px;
   width: 6px;
@@ -36,7 +36,7 @@ body {
   background: #fafafa;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D9946A99;
+  background: #7B2D4A99;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -46,7 +46,7 @@ body {
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* Primary button — solid peach, flat minimalist radius */
+/* Primary button — solid wine, flat minimalist radius */
 .btn-primary {
   background: var(--brand-peach);
   color: #fff;
@@ -85,7 +85,7 @@ body {
 }
 
 /* Outline button — ink border, flips to solid ink on hover so it reads
-   as a clear secondary action without competing with the peach accent */
+   as a clear secondary action without competing with the wine accent */
 .btn-outline {
   border: 1px solid var(--brand-ink);
   color: var(--brand-ink);
@@ -102,7 +102,7 @@ body {
   color: #fff;
 }
 
-/* Soft secondary button (peach-wash fill) */
+/* Soft secondary button (wine-wash fill) */
 .btn-gold {
   background: var(--brand-peach-light);
   color: var(--brand-peach-dark);

@@ -14,6 +14,8 @@ const GOLD_DEEP = '#A8861A'; // darker gold for text on white (better readabilit
 const GOLD_WASH = '#F7F0D8';
 const LINE = '#E8E2D0';
 const PAPER = '#FFFFFF';
+const WINE = '#7B2D4A';
+const WINE_DEEP = '#651F3B';
 const FONT_SERIF = "'Playfair Display', Georgia, 'Times New Roman', serif";
 
 export default function CartPage() {
@@ -27,8 +29,8 @@ export default function CartPage() {
         <p className="text-sm mb-7" style={{ color: INK_SOFT }}>Add something beautiful from our collection.</p>
         <Link
           href="/"
-          className="inline-block px-6 py-3 text-sm font-medium transition-colors hover:bg-[#C9A227] hover:text-[#0A0A0A] active:opacity-80"
-          style={{ background: INK, color: PAPER, borderRadius: '4px' }}
+          className="inline-block px-6 py-3 text-sm font-medium transition-colors hover:bg-[#651F3B] active:opacity-80"
+          style={{ background: WINE, color: PAPER, borderRadius: '4px' }}
         >
           Continue Shopping
         </Link>
@@ -121,8 +123,8 @@ export default function CartPage() {
       {/* Checkout CTA */}
       <Link
         href="/checkout"
-        className="block w-full text-center mt-6 py-3.5 text-sm font-medium transition-colors hover:bg-[#C9A227] hover:text-[#0A0A0A] active:opacity-80"
-        style={{ background: INK, color: PAPER, borderRadius: '4px', border: `1px solid ${INK}` }}
+        className="block w-full text-center mt-6 py-3.5 text-sm font-medium transition-colors hover:bg-[#651F3B] active:opacity-80"
+        style={{ background: WINE, color: PAPER, borderRadius: '4px', border: `1px solid ${WINE}` }}
       >
         Proceed to Checkout
       </Link>

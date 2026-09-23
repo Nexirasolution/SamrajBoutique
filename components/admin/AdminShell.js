@@ -8,11 +8,14 @@ import {
   Clapperboard, Star, Ticket, Layers, FileBarChart, Settings as SettingsIcon, Menu, X, LogOut
 } from 'lucide-react';
 
-// Design tokens — same black/white/gold system as the rest of the site.
+// Design tokens — white / wine / gold system.
+// Active nav item: wine background, gold text/icon.
+// Hover (inactive items): pale gold wash background, ink text.
 const INK = '#000000';
 const INK_SOFT = '#6B6B6B';
 const GOLD = '#C9A227';
 const GOLD_WASH = '#F6EFD9';
+const WINE = '#7B2D4A';
 const LINE = '#E8E8E8';
 const PAPER = '#FFFFFF';
 
@@ -99,7 +102,7 @@ export default function AdminShell({ admin, children }) {
                 className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors"
                 style={{
                   borderRadius: '4px',
-                  background: active ? INK : 'transparent',
+                  background: active ? WINE : 'transparent',
                   color: active ? GOLD : INK_SOFT,
                 }}
                 onMouseEnter={(e) => {

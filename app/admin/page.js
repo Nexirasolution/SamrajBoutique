@@ -5,10 +5,12 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianG
 import { formatINR } from '@/lib/utils';
 import { IndianRupee, ShoppingCart, Package, AlertTriangle } from 'lucide-react';
 
-// Design tokens — same black/white/gold system as the rest of the site.
-const INK = '#000000';
+// Design tokens — white / wine system (no pure black).
+const INK = '#241B21';          // soft dark ink, not pure black
 const INK_SOFT = '#6B6B6B';
-const GOLD = '#C9A227';
+const WINE = '#7B2D4A';
+const WINE_DEEP = '#651F3B';
+const WINE_WASH = '#F3DEE5';    // pale wine — non-highlighted icon tiles
 const LINE = '#E8E8E8';
 const PAPER = '#FFFFFF';
 const FONT_SERIF = "Georgia, 'Times New Roman', serif";
@@ -17,15 +19,16 @@ const FONT_SERIF = "Georgia, 'Times New Roman', serif";
 // the previous theme's CSS.
 const CARD = { background: PAPER, border: `1px solid ${LINE}`, borderRadius: '4px' };
 
-// `highlight` flips the icon tile to gold — used for the card that needs action.
+// `highlight` flips the icon tile to solid wine — used for the card that needs action.
+// Non-highlighted tiles use a pale wine wash instead of black.
 function StatCard({ icon: Icon, label, value, sub, highlight = false }) {
   return (
     <div className="p-4 flex items-center gap-3" style={CARD}>
       <div
         className="p-3"
-        style={{ background: highlight ? GOLD : INK, borderRadius: '4px' }}
+        style={{ background: highlight ? WINE : WINE_WASH, borderRadius: '4px' }}
       >
-        <Icon size={20} style={{ color: highlight ? INK : GOLD }} />
+        <Icon size={20} style={{ color: highlight ? PAPER : WINE_DEEP }} />
       </div>
       <div>
         <p className="text-xs" style={{ color: INK_SOFT }}>{label}</p>
@@ -134,10 +137,10 @@ export default function AdminDashboard() {
               <Line
                 type="monotone"
                 dataKey="sales"
-                stroke={GOLD}
+                stroke={WINE}
                 strokeWidth={2.5}
                 dot={false}
-                activeDot={{ r: 5, fill: INK, stroke: GOLD }}
+                activeDot={{ r: 5, fill: WINE_DEEP, stroke: WINE }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -149,7 +152,7 @@ export default function AdminDashboard() {
       <div className="grid sm:grid-cols-2 gap-6">
         <div className="p-5" style={CARD}>
           <h2 className="font-semibold mb-3 flex items-center gap-2" style={{ color: INK }}>
-            <Package size={18} style={{ color: GOLD }} /> Top Selling Products
+            <Package size={18} style={{ color: WINE }} /> Top Selling Products
           </h2>
           {data.topProducts?.length ? (
             <ul className="space-y-2">
@@ -167,7 +170,7 @@ export default function AdminDashboard() {
 
         <div className="p-5" style={CARD}>
           <h2 className="font-semibold mb-3 flex items-center gap-2" style={{ color: INK }}>
-            <AlertTriangle size={18} style={{ color: GOLD }} /> Low Stock Alert
+            <AlertTriangle size={18} style={{ color: WINE }} /> Low Stock Alert
           </h2>
           {!data.lowStock || data.lowStock.length === 0 ? (
             <p className="text-sm" style={{ color: INK_SOFT }}>All good — no low stock items.</p>

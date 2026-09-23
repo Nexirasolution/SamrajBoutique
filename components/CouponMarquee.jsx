@@ -3,15 +3,14 @@
 import { useEffect, useState } from 'react';
 import { Tag, Truck } from 'lucide-react';
 
-// Theme: Light Blush + Champagne Gold — keep in sync with ProductCard,
-// ProductPage and Navbar. Blush announcement bar; champagne gold is too
-// light to read as small text on blush, so text is warm ink and gold is
-// used for the rule, separators and code underline.
-const BAR = '#F8D7DA';        // Light Blush
-const INK = '#2B2022';        // text
-const INK_SOFT = '#6E5F61';   // secondary text (min-order note)
+// Theme: Wine + Champagne Gold — keep in sync with ProductCard,
+// ProductPage and Navbar. Deep wine announcement bar; text is warm
+// cream for contrast, gold is used for the rule, separators and code underline.
+const BAR = '#5E1F2E';        // Wine
+const INK = '#F5E9E3';        // text (cream, readable on wine)
+const INK_SOFT = '#D8B3B9';   // secondary text (min-order note)
 const GOLD = '#D6B56D';       // Champagne Gold — rule, separators, underline
-const GOLD_DEEP = '#8A6A24';  // icons / coupon code (readable on blush)
+const GOLD_DEEP = '#EFCB7D';  // icons / coupon code (readable on wine)
 
 // A quiet serif, matched to the wordmark used elsewhere on the site,
 // so the marquee reads as part of the same brand rather than generic UI text.
