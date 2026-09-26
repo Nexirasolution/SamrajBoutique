@@ -1,24 +1,17 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { NextResponse } from 'next/server';
+import { randomUUID } from 'crypto';
 
 export const runtime = 'nodejs';
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true,
+const s3 = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
 });
-
-function uploadBuffer(buffer, options) {
-  return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(options, (error, result) => {
-      if (error) return reject(error);
-      resolve(result);
-    });
-    stream.end(buffer);
-  });
-}
 
 export async function POST(req) {
   try {
@@ -30,19 +23,29 @@ export async function POST(req) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // Cloudinary generates a unique public_id automatically, and `folder`
-    // keeps the same folder structure you had in R2.
-    const result = await uploadBuffer(buffer, {
-      folder,
-      resource_type: 'auto', // images, videos and other files
-    });
+    // Build a unique key, preserving the folder structure
+    const ext = file.name?.includes('.') ? file.name.split('.').pop() : '';
+    const key = `${folder}/${randomUUID()}${ext ? `.${ext}` : ''}`;
+
+    await s3.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: file.type || 'application/octet-stream',
+      })
+    );
+
+    // Public URL depends on your R2 setup: either a custom domain
+    // connected to the bucket, or the R2.dev public bucket URL.
+    const url = `${process.env.R2_PUBLIC_URL}/${key}`;
 
     return NextResponse.json({
-      url: result.secure_url,
-      publicId: result.public_id,
+      url,
+      publicId: key,
     });
   } catch (err) {
-    console.error('Cloudinary upload failed:', err);
+    console.error('R2 upload failed:', err);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }
