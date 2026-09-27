@@ -5,19 +5,19 @@ import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { Plus, Trash2, Upload, Loader2, X } from 'lucide-react';
 
-// Design tokens — same white/peach minimalist system as the rest of the site.
-const INK = '#241B21';
-const INK_SOFT = '#9C877D';
-const PEACH = '#D9946A';
-const PEACH_WASH = '#FBE8D9';
-const LINE = '#EEE3DA';
+// Design tokens — same white/wine minimalist system as the rest of the site.
+const INK = '#241B1D';
+const INK_SOFT = '#9C7D82';
+const PEACH = '#7A2333';
+const PEACH_WASH = '#F3E3E6';
+const LINE = '#EAD9DC';
 const PAPER = '#FFFFFF';
-const DISABLED_BG = '#F7F2EC';
+const DISABLED_BG = '#F7EEF0';
 
 function emptyVariant() {
   return {
     color: '',
-    colorHex: '#D9946A',
+    colorHex: '#7A2333',
     images: [''],
     price: '',
     compareAtPrice: '',
