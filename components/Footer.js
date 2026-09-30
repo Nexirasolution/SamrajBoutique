@@ -1,4 +1,4 @@
-import { MapPin } from 'lucide-react';
+import { MapPin, Navigation } from 'lucide-react';
 import { Fraunces, Inter } from 'next/font/google';
 import { dbConnect } from '@/lib/mongodb';
 import Category from '@/models/Category';
@@ -14,6 +14,13 @@ const WINE = '#7B2D4A';
 const INK = '#000000';
 const INK_SOFT = 'rgba(0,0,0,0.65)';
 const LINE = 'rgba(0,0,0,0.12)';
+
+// Store location
+const LAT = 11.9593641;
+const LNG = 79.1831053;
+const MAP_EMBED_SRC = `https://www.google.com/maps?q=${LAT},${LNG}&z=17&hl=en&output=embed`;
+const MAP_LINK = `https://www.google.com/maps?q=${LAT},${LNG}&z=17&hl=en`;
+const DIRECTIONS_LINK = `https://www.google.com/maps/dir/?api=1&destination=${LAT},${LNG}`;
 
 async function getCategories() {
   await dbConnect();
@@ -47,23 +54,59 @@ export default async function Footer() {
             Wholesale &amp; Retail
           </p>
 
-          <p className="flex items-start gap-1.5 text-xs leading-relaxed" style={{ color: INK_SOFT }}>
+          <a
+            href={MAP_LINK}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-start gap-1.5 text-xs leading-relaxed transition-opacity hover:opacity-75"
+            style={{ color: INK_SOFT }}
+          >
             <MapPin size={13} className="shrink-0 mt-0.5" style={{ color: WINE }} />
             <span>
               Trichy Bypass Road, Sandhapettai,<br />
               Thirukovilur. Near Mandapam X Road
             </span>
-          </p>
-
-          {/* <p className="inline-flex items-center gap-1.5 mt-4 text-[11px] font-normal tracking-wide" style={{ color: INK_SOFT }}>
-            <span className="w-1.5 h-1.5 rounded-full" style={{ background: WINE }} />
-            Online sales only
-          </p> */}
+          </a>
         </div>
 
         {/* Shop / Quick Links / Connect — accordion on mobile, columns on desktop.
             WhatsApp and Instagram links are set inside FooterLinks.jsx. */}
         <FooterLinks categories={categories} quickLinks={quickLinks} />
+      </div>
+
+      {/* Map */}
+      <div className="max-w-7xl mx-auto px-4 pb-12">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-[11px] font-medium tracking-wide uppercase" style={{ color: INK }}>
+            Find Us
+          </h4>
+          <a
+            href={DIRECTIONS_LINK}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-[11px] font-medium transition-opacity hover:opacity-75"
+            style={{ color: WINE }}
+          >
+            <Navigation size={12} />
+            Get Directions
+          </a>
+        </div>
+
+        <div
+          className="w-full overflow-hidden"
+          style={{ border: `1px solid ${LINE}`, borderRadius: 4 }}
+        >
+          <iframe
+            title="Samraj Boutique location"
+            src={MAP_EMBED_SRC}
+            width="100%"
+            height="300"
+            style={{ border: 0, display: 'block' }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+          />
+        </div>
       </div>
 
       {/* Bottom bar */}
@@ -73,8 +116,8 @@ export default async function Footer() {
             © {new Date().getFullYear()} Samraj Boutique. All rights reserved.
           </p>
 
-          
-          <a  href="https://www.nexirasolution.in"
+          <a
+            href="https://www.nexirasolution.in"
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-1.5 text-[11px] transition-opacity hover:opacity-75"
