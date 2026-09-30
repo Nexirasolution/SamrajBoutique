@@ -102,6 +102,13 @@ export default function ProductPage() {
     ? activeVariant.compareAtPrice + addonTotal
     : 0;
 
+  // Most specific SKU wins: the selected size's SKU if it has one,
+  // otherwise the product-level SKU.
+  const selectedSizeSku = activeSize
+    ? activeVariant?.sizes?.find((s) => s.size === activeSize)?.sku
+    : '';
+  const displaySku = selectedSizeSku || product.sku;
+
   function stockCap() {
     return getCombinedStock(activeVariant, activeSize, {
       pantOptions: product.pantOptions,
@@ -173,6 +180,7 @@ export default function ProductPage() {
       variantId: activeVariant._id,
       comboId: null,
       name: product.name,
+      sku: displaySku,
       image: activeVariant.images?.[0],
       color: activeVariant.color,
       size: activeSize,
@@ -340,6 +348,14 @@ export default function ProductPage() {
               </span>
             )}
 
+            {/* SKU — product SKU by default; switches to the selected
+                size's SKU once a size is picked (if that size has one) */}
+            {displaySku && (
+              <p className="text-[11px] mt-2 sm:mt-2.5 tracking-wide" style={{ color: NEUTRAL }}>
+                SKU: <span style={{ color: GREY }}>{displaySku}</span>
+              </p>
+            )}
+
             {/* <div className="flex items-center gap-1.5 mt-1.5 sm:mt-2.5 text-sm" style={{ color: GREY }}>
               <Star size={13} strokeWidth={1.5} style={{ fill: GOLD, color: GOLD }} />
               <span style={{ color: INK }}>{product.rating?.toFixed?.(1) ?? product.rating}</span>
@@ -367,6 +383,13 @@ export default function ProductPage() {
             {addonTotal > 0 && (
               <p className="text-xs mt-1" style={{ color: GREY }}>
                 Includes {formatINR(addonTotal)} for selected add-ons
+              </p>
+            )}
+            {(selectedPant?.sku || selectedShawl?.sku) && (
+              <p className="text-[11px] mt-1" style={{ color: NEUTRAL }}>
+                {selectedPant?.sku && <>Pant SKU: <span style={{ color: GREY }}>{selectedPant.sku}</span></>}
+                {selectedPant?.sku && selectedShawl?.sku && ' · '}
+                {selectedShawl?.sku && <>Shawl SKU: <span style={{ color: GREY }}>{selectedShawl.sku}</span></>}
               </p>
             )}
 
