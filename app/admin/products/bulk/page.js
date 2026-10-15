@@ -1,9 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { X, UploadCloud, Loader2, Plus, Upload } from 'lucide-react';
+import { uploadFiles } from '@/lib/uploadClient';
+
+const SLEEVE_OPTIONS = ['Full Sleeve', 'Half Sleeve', 'Elbow Sleeve', 'Sleeveless'];
+const ZIP_OPTIONS = ['With Zip', 'Without Zip'];
+
+const PHASE_LABEL = {
+  optimize: 'Optimizing images',
+  upload: 'Uploading images',
+  save: 'Creating products',
+};
 
 export default function BulkAddProductsPage() {
   const router = useRouter();
@@ -21,16 +31,11 @@ export default function BulkAddProductsPage() {
   // Applies to every product created in this batch
   const [isReadyToShip, setIsReadyToShip] = useState(false);
 
-  // Optional garment attributes — product-level, multi-select. Applied to
-  // every product in this batch. Leave both unchecked for categories where
-  // these don't apply (sarees, dupattas, etc). Customers will pick one of
-  // each on the storefront PDP if any are checked here.
+  // Optional garment attributes — product-level, multi-select.
   const [sleeveOptions, setSleeveOptions] = useState([]);
   const [zipOptions, setZipOptions] = useState([]);
 
-  // Optional — one or more shared size chart images applied to every
-  // product in this batch. Leave empty to fall back to the category's
-  // size chart instead.
+  // Optional shared size chart images (falls back to the category's chart)
   const [sizeChart, setSizeChart] = useState([]);
   const [sizeChartUploading, setSizeChartUploading] = useState(false);
 
@@ -42,7 +47,15 @@ export default function BulkAddProductsPage() {
   const [files, setFiles] = useState([]); // File[]
   const [previews, setPreviews] = useState([]); // objectURL[]
   const [submitting, setSubmitting] = useState(false);
+  const [progress, setProgress] = useState(null); // { phase, done, total }
   const [result, setResult] = useState(null);
+
+  // Keep the latest previews in a ref so we can revoke them on unmount
+  const previewsRef = useRef([]);
+  useEffect(() => {
+    previewsRef.current = previews;
+  }, [previews]);
+  useEffect(() => () => previewsRef.current.forEach((u) => URL.revokeObjectURL(u)), []);
 
   useEffect(() => {
     fetch('/api/categories')
@@ -52,11 +65,9 @@ export default function BulkAddProductsPage() {
   }, []);
 
   const selectedCategory = categories.find((c) => c._id === category);
-  // Preview of what the auto-generated title prefix will look like, purely cosmetic
-  const titlePreview = (selectedCategory?.name || '')
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '') || 'CATEGORY';
+  // Cosmetic preview of the auto-generated title prefix
+  const titlePreview =
+    (selectedCategory?.name || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '') || 'CATEGORY';
 
   useEffect(() => {
     const cat = categories.find((c) => c._id === category);
@@ -68,13 +79,10 @@ export default function BulkAddProductsPage() {
     setManualSizeStock('');
   }, [category, categories]);
 
-  function toggleSleeveOption(opt) {
-    setSleeveOptions((prev) => (prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt]));
-  }
-
-  function toggleZipOption(opt) {
-    setZipOptions((prev) => (prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt]));
-  }
+  const toggleIn = (setter) => (opt) =>
+    setter((prev) => (prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt]));
+  const toggleSleeveOption = toggleIn(setSleeveOptions);
+  const toggleZipOption = toggleIn(setZipOptions);
 
   function handleFilesChange(e) {
     const selected = Array.from(e.target.files || []);
@@ -84,8 +92,15 @@ export default function BulkAddProductsPage() {
   }
 
   function removeImage(idx) {
+    URL.revokeObjectURL(previews[idx]);
     setFiles((prev) => prev.filter((_, i) => i !== idx));
     setPreviews((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function clearImages() {
+    previews.forEach((u) => URL.revokeObjectURL(u));
+    setFiles([]);
+    setPreviews([]);
   }
 
   function addManualSize() {
@@ -101,35 +116,21 @@ export default function BulkAddProductsPage() {
     setManualSizes((prev) => prev.filter((s) => s.size !== name));
   }
 
-  async function uploadImage(file) {
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch('/api/upload', { method: 'POST', body: formData });
-    if (!res.ok) throw new Error(`Failed to upload ${file.name}`);
-    const data = await res.json();
-    return data.url;
-  }
-
-  // Size chart — supports multiple images. Selecting several files at once
-  // uploads each in turn and appends every resulting URL to the shared array.
+  // Size chart images: compressed in the browser, sent straight to R2
   async function handleSizeChartFilesChange(e) {
     const selected = Array.from(e.target.files || []);
+    e.target.value = '';
     if (selected.length === 0) return;
 
     setSizeChartUploading(true);
     try {
-      const uploaded = [];
-      for (const file of selected) {
-        const url = await uploadImage(file);
-        uploaded.push(url);
-      }
-      setSizeChart((prev) => [...prev, ...uploaded]);
-      toast.success(`${uploaded.length} size chart image${uploaded.length > 1 ? 's' : ''} uploaded`);
+      const urls = await uploadFiles(selected, { folder: 'size-charts' });
+      setSizeChart((prev) => [...prev, ...urls]);
+      toast.success(`${urls.length} size chart image${urls.length > 1 ? 's' : ''} uploaded`);
     } catch (err) {
       toast.error(err.message || 'Failed to upload size chart');
     } finally {
       setSizeChartUploading(false);
-      e.target.value = '';
     }
   }
 
@@ -150,28 +151,26 @@ export default function BulkAddProductsPage() {
     const fromPredefined = Object.entries(stockBySize)
       .filter(([, stock]) => stock !== '')
       .map(([size, stock]) => ({ size, stock: Number(stock) }));
-
     const fromManual = manualSizes.map((s) => ({ size: s.size, stock: Number(s.stock) || 0 }));
-
     const sizes = [...fromPredefined, ...fromManual];
 
     if (sizes.length === 0) {
       if (categorySizes.length === 0) {
-        return toast.error('This category has no sizes configured — add a size manually below, or set sizes on the category first.');
+        return toast.error(
+          'This category has no sizes configured — add a size manually below, or set sizes on the category first.'
+        );
       }
       return toast.error('Enter stock for at least one size');
     }
 
     setSubmitting(true);
+    setProgress({ phase: 'optimize', done: 0, total: files.length });
     try {
-      // 1. Upload every image first, one product will be created per URL
-      const imageUrls = [];
-      for (const file of files) {
-        const url = await uploadImage(file);
-        imageUrls.push(url);
-      }
+      // 1. Compress + upload every image straight to R2 (no file bytes via Vercel)
+      const imageUrls = await uploadFiles(files, { folder: 'products', onProgress: setProgress });
 
-      // 2. Create products in bulk
+      // 2. Create products — tiny JSON request
+      setProgress({ phase: 'save', done: 0, total: files.length });
       const res = await fetch('/api/products/bulk', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -197,7 +196,6 @@ export default function BulkAddProductsPage() {
       } catch {
         throw new Error(`Server returned an unexpected response (status ${res.status})`);
       }
-
       if (!res.ok) throw new Error(data.error || `Bulk upload failed (status ${res.status})`);
 
       setResult(data);
@@ -206,13 +204,23 @@ export default function BulkAddProductsPage() {
       }
       if (data.errors?.length) {
         toast.error(`${data.errors.length} item(s) skipped — see details below`);
+      } else {
+        // Everything succeeded — clear images so a re-submit can't create duplicates
+        clearImages();
       }
     } catch (err) {
       toast.error(err.message || 'Something went wrong');
     } finally {
       setSubmitting(false);
+      setProgress(null);
     }
   }
+
+  const submitLabel = submitting
+    ? progress
+      ? `${PHASE_LABEL[progress.phase]}${progress.phase === 'save' ? '...' : ` ${progress.done}/${progress.total}`}`
+      : 'Working...'
+    : `Create ${files.length || ''} Product${files.length === 1 ? '' : 's'}`;
 
   return (
     <div className="max-w-3xl">
@@ -301,16 +309,13 @@ export default function BulkAddProductsPage() {
           />
         </div>
 
-        {/* Sleeve Type / Zip Type — product-level, multi-select. Applied to
-            every product in this batch. Leave both unchecked for categories
-            where these don't apply (sarees, dupattas, etc). If any are
-            checked, customers must choose one of each on the storefront
-            before adding the product to cart. */}
+        {/* Sleeve / Zip options — leave unchecked for categories where they don't apply.
+            If any are checked, customers must choose one of each before adding to cart. */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Sleeve Type Options (optional)</label>
             <div className="flex flex-wrap gap-3">
-              {['Full Sleeve', 'Half Sleeve', 'Elbow Sleeve', 'Sleeveless'].map((opt) => (
+              {SLEEVE_OPTIONS.map((opt) => (
                 <label key={opt} className="flex items-center gap-1.5 text-sm cursor-pointer">
                   <input
                     type="checkbox"
@@ -326,7 +331,7 @@ export default function BulkAddProductsPage() {
           <div>
             <label className="block text-sm font-medium mb-2">Zip Type Options (optional)</label>
             <div className="flex flex-wrap gap-3">
-              {['With Zip', 'Without Zip'].map((opt) => (
+              {ZIP_OPTIONS.map((opt) => (
                 <label key={opt} className="flex items-center gap-1.5 text-sm cursor-pointer">
                   <input
                     type="checkbox"
@@ -348,8 +353,8 @@ export default function BulkAddProductsPage() {
           </label>
           <div className="grid grid-cols-4 sm:grid-cols-6 gap-3">
             {sizeChart.map((url, idx) => (
-              <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-brand-ink/5">
-                <img src={url} alt="" className="w-full h-full object-cover" />
+              <div key={url} className="relative aspect-square rounded-md overflow-hidden bg-brand-ink/5">
+                <img src={url} alt="" loading="lazy" className="w-full h-full object-cover" />
                 <button
                   type="button"
                   onClick={() => removeSizeChartImage(idx)}
@@ -412,7 +417,7 @@ export default function BulkAddProductsPage() {
           </div>
         )}
 
-        {/* Fallback: category has no sizes configured, let admin add sizes manually for this batch */}
+        {/* Fallback: category has no sizes configured */}
         {category && categorySizes.length === 0 && (
           <div className="border border-brand-gold/40 bg-brand-gold/5 rounded-lg p-3">
             <p className="text-sm font-medium mb-1">No sizes configured for this category</p>
@@ -475,18 +480,26 @@ export default function BulkAddProductsPage() {
           <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-brand-ink/15 rounded-lg py-8 cursor-pointer text-brand-ink/50 hover:border-brand-magenta/40">
             <UploadCloud size={22} />
             <span className="text-sm">Click to select images</span>
-            <input type="file" accept="image/*" multiple onChange={handleFilesChange} className="hidden" />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFilesChange}
+              disabled={submitting}
+              className="hidden"
+            />
           </label>
 
           {previews.length > 0 && (
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-3 mt-4">
               {previews.map((src, idx) => (
-                <div key={idx} className="relative aspect-square rounded-md overflow-hidden bg-brand-ink/5">
-                  <img src={src} alt="" className="w-full h-full object-cover" />
+                <div key={src} className="relative aspect-square rounded-md overflow-hidden bg-brand-ink/5">
+                  <img src={src} alt="" loading="lazy" className="w-full h-full object-cover" />
                   <button
                     type="button"
+                    disabled={submitting}
                     onClick={() => removeImage(idx)}
-                    className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white"
+                    className="absolute top-1 right-1 w-5 h-5 bg-black/60 rounded-full flex items-center justify-center text-white disabled:opacity-40"
                   >
                     <X size={12} />
                   </button>
@@ -496,9 +509,13 @@ export default function BulkAddProductsPage() {
           )}
         </div>
 
-        <button type="submit" disabled={submitting} className="btn-primary flex items-center gap-2 text-sm disabled:opacity-60">
+        <button
+          type="submit"
+          disabled={submitting || sizeChartUploading}
+          className="btn-primary flex items-center gap-2 text-sm disabled:opacity-60"
+        >
           {submitting && <Loader2 size={16} className="animate-spin" />}
-          {submitting ? 'Creating products...' : `Create ${files.length || ''} Product${files.length === 1 ? '' : 's'}`}
+          {submitLabel}
         </button>
       </form>
 
