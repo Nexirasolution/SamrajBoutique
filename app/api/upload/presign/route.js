@@ -7,9 +7,6 @@ import { requireAdmin } from '@/lib/apiAuth';
 export const runtime = 'nodejs';
 export const maxDuration = 10;
 
-// Must match CACHE_CONTROL in lib/uploadClient.js (it is part of the signature)
-const CACHE_CONTROL = 'public, max-age=31536000, immutable';
-
 const ALLOWED_TYPES = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -17,6 +14,9 @@ const ALLOWED_TYPES = {
   'image/gif': 'gif',
   'image/avif': 'avif',
 };
+
+// Must match VARIANT_WIDTHS in lib/uploadClient.js and lib/imageLoader.js
+const ALLOWED_VARIANTS = [400, 800];
 
 const MAX_FILES_PER_REQUEST = 50;
 const URL_TTL_SECONDS = 600; // 10 min — enough for slow mobile connections
@@ -28,16 +28,19 @@ const s3 = new S3Client({
     accessKeyId: process.env.R2_ACCESS_KEY_ID,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
+  // R2 rejects the extra checksum params newer AWS SDK versions add to presigned URLs
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  responseChecksumValidation: 'WHEN_REQUIRED',
 });
 
 const publicBase = () => (process.env.R2_PUBLIC_URL || '').replace(/\/$/, '');
 
 // POST /api/upload/presign
-// body: { folder?: string, files: [{ contentType: 'image/jpeg' }, ...] }
-// returns: { uploads: [{ uploadUrl, url, key }, ...] }  (same order as files)
+// body: { folder?, files: [{ contentType, variants?: [400, 800] }, ...] }
+// returns: { uploads: [{ uploadUrl, url, key, variants: [{ width, uploadUrl, url }] }] }
 //
-// Only tiny JSON passes through Vercel. The browser PUTs the actual image
-// straight to Cloudflare R2 using the signed URL.
+// Keys per image:  <folder>/<uuid>_full.<ext>, <uuid>_400.<ext>, <uuid>_800.<ext>
+// Only tiny JSON passes through Vercel. The browser PUTs every file straight to R2.
 export const POST = requireAdmin(async (req) => {
   try {
     const body = await req.json();
@@ -47,13 +50,9 @@ export const POST = requireAdmin(async (req) => {
       return NextResponse.json({ error: 'No files specified' }, { status: 400 });
     }
     if (files.length > MAX_FILES_PER_REQUEST) {
-      return NextResponse.json(
-        { error: `Max ${MAX_FILES_PER_REQUEST} files per request` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Max ${MAX_FILES_PER_REQUEST} files per request` }, { status: 400 });
     }
 
-    // Folder is used in the object key — keep it to safe characters only
     const rawFolder = typeof body.folder === 'string' ? body.folder : 'uploads';
     const folder = /^[a-z0-9_-]{1,40}$/i.test(rawFolder) ? rawFolder : 'uploads';
 
@@ -64,22 +63,46 @@ export const POST = requireAdmin(async (req) => {
           { status: 400 }
         );
       }
+      const v = f.variants ?? [];
+      if (!Array.isArray(v) || !v.every((w) => ALLOWED_VARIANTS.includes(w))) {
+        return NextResponse.json({ error: 'Invalid image variant requested' }, { status: 400 });
+      }
     }
 
+    const base = publicBase();
+
     const uploads = await Promise.all(
-      files.map(async ({ contentType }) => {
-        const key = `${folder}/${randomUUID()}.${ALLOWED_TYPES[contentType]}`;
-        const uploadUrl = await getSignedUrl(
-          s3,
-          new PutObjectCommand({
-            Bucket: process.env.R2_BUCKET_NAME,
-            Key: key,
-            ContentType: contentType,
-            CacheControl: CACHE_CONTROL,
-          }),
-          { expiresIn: URL_TTL_SECONDS }
-        );
-        return { uploadUrl, url: `${publicBase()}/${key}`, key };
+      files.map(async ({ contentType, variants = [] }) => {
+        const ext = ALLOWED_TYPES[contentType];
+        const prefix = `${folder}/${randomUUID()}`;
+
+        const sign = (key) =>
+          getSignedUrl(
+            s3,
+            new PutObjectCommand({
+              Bucket: process.env.R2_BUCKET_NAME,
+              Key: key,
+              ContentType: contentType,
+            }),
+            { expiresIn: URL_TTL_SECONDS }
+          );
+
+        const key = `${prefix}_full.${ext}`;
+        const [uploadUrl, ...variantUrls] = await Promise.all([
+          sign(key),
+          ...variants.map((w) => sign(`${prefix}_${w}.${ext}`)),
+        ]);
+
+        return {
+          uploadUrl,
+          url: `${base}/${key}`,
+          key,
+          variants: variants.map((w, i) => ({
+            width: w,
+            uploadUrl: variantUrls[i],
+            url: `${base}/${prefix}_${w}.${ext}`,
+          })),
+        };
       })
     );
 

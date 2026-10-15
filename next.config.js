@@ -1,16 +1,10 @@
-// Old images are still served from R2, so keep its host allowed while any
-// R2 URLs remain in the database. Remove this once everything is migrated.
-const r2Host = process.env.R2_PUBLIC_URL
-  ? new URL(process.env.R2_PUBLIC_URL).hostname
-  : null;
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'res.cloudinary.com' },
-      ...(r2Host ? [{ protocol: 'https', hostname: r2Host }] : []),
-    ],
+    // Custom loader = Vercel's Image Optimization (and its CPU/billing) is never used.
+    // Images are served directly from R2 / Cloudflare CDN. remotePatterns isn't needed.
+    loader: 'custom',
+    loaderFile: './lib/imageLoader.js',
   },
   eslint: { ignoreDuringBuilds: true },
 };
