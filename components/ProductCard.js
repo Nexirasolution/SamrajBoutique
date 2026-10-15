@@ -19,12 +19,10 @@ import { useCart } from '@/components/CartContext';
 const INK = '#2B2022';         // primary text (warm near-black)
 const INK_SOFT = '#7A6A6C';    // secondary text, struck-through price
 const BLUSH = '#F8D7DA';       // Light Blush
-const BLUSH_LIGHT = '#FDF1F2'; // image well
 const GOLD = '#D6B56D';        // Champagne Gold — used for the Sale badge
 const GOLD_DEEP = '#8A6A24';   // gold used as text on white (readable)
 const WINE = '#7B2D4A';        // Wine — buttons, wishlist-active, discount %
 const WINE_SOFT = '#F3DEE5';   // pale wine — added-state button fill
-const WINE_HOVER = 'rgba(123, 45, 74, 0.08)'; // wine tint for cart-button hover
 const PINK = '#D6336C';        // low-stock "X left" badge
 const PINK_LIGHT = '#FCE4EC';  // low-stock badge background
 const LINE = '#F0DADC';        // hairlines
@@ -36,6 +34,12 @@ const FONT_SANS = "'Helvetica Neue', Helvetica, Arial, sans-serif";
 // so those cards send the shopper to the product page instead.
 // Adjust these field names if your Product model calls them something else.
 const OPTION_FIELDS = ['sleeveOptions', 'zipOptions'];
+
+// Matches the grids used on the homepage / product lists:
+// 2 columns on mobile, 3 on tablet, 4 on desktop (container max ~1150px).
+// Accurate `sizes` lets the browser pick the 400 / 800 file instead of
+// downloading a bigger image than it needs.
+const IMAGE_SIZES = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px';
 
 // ---------------------------------------------------------------------------
 // Action buttons (colors live in classes so hover states can override them)
@@ -52,7 +56,9 @@ const BTN_BUY = `${BTN_BASE} bg-[#7B2D4A] text-white border border-[#7B2D4A] hov
 
 const ICON_CLASS = 'sm:hidden lg:inline-block shrink-0';
 
-export default function ProductCard({ product }) {
+// `priority`: pass true for the first row of a product page (above the fold)
+// so those images are preloaded. Leave false everywhere else.
+export default function ProductCard({ product, priority = false }) {
   const router = useRouter();
   const { addItem } = useCart();
   const { isWishlisted, toggleWishlist } = useWishlist();
@@ -142,7 +148,8 @@ export default function ProductCard({ product }) {
               src={image}
               alt={product.name}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes={IMAGE_SIZES}
+              priority={priority}
               className={`object-cover ${outOfStock ? 'grayscale opacity-70' : ''}`}
             />
           </div>
@@ -180,14 +187,14 @@ export default function ProductCard({ product }) {
           ) : null}
         </div>
 
-        {/* Wishlist */}
+        {/* Wishlist (no backdrop-filter: it was invisible at 92% opacity but costly while scrolling on phones) */}
         <button
           type="button"
           onClick={handleWishlistClick}
           aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           aria-pressed={wishlisted}
           className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full transition-transform active:scale-90"
-          style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(2px)' }}
+          style={{ background: 'rgba(255,255,255,0.92)' }}
         >
           <Heart
             className="w-4 h-4"

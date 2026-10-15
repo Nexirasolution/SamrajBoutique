@@ -1,7 +1,3 @@
-// ISR: page is served from cache and rebuilt in the background every 60s.
-// (Was force-dynamic = 8 DB queries on every single request.)
-export const revalidate = 60;
-
 import { dbConnect } from '@/lib/mongodb';
 import Banner from '@/models/Banner';
 import Product from '@/models/Product';
@@ -11,11 +7,18 @@ import Category from '@/models/Category';
 import BannerCarousel from '@/components/BannerCarousel';
 import ProductCard from '@/components/ProductCard';
 import ReviewSection from '@/components/ReviewSection';
+import { slimProduct } from '@/lib/slimProduct';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { formatINR } from '@/lib/utils';
 import { ArrowRight, Tag } from 'lucide-react';
+
+// ISR: the page is served from the CDN cache and rebuilt in the background
+// at most once every 10 minutes (was force-dynamic = 8 DB queries per request).
+// For instant updates, call revalidatePath('/') in your admin save/delete routes
+// (banners, products, combos, categories, reviews). Then this can go even higher.
+export const revalidate = 600;
 
 const INK = '#2B2022';
 const INK_SOFT = '#6E5F61';
@@ -37,7 +40,7 @@ async function getData() {
     Banner.find({ isActive: true }).sort({ sortOrder: 1 }).lean(),
     Product.find({ isActive: true, isActiveSeller: true })
       .sort({ createdAt: -1 })
-      .limit(FEATURED_LIMIT) // was 12 then sliced to 6
+      .limit(FEATURED_LIMIT)
       .lean(),
     Review.find({ isApproved: true, isFeatured: true })
       .populate('product', 'name')
@@ -54,7 +57,7 @@ async function getData() {
   ]);
   return {
     banners: plain(banners),
-    newArrivals: plain(newArrivals),
+    newArrivals: plain(newArrivals).map(slimProduct),
     reviews: plain(reviews),
     combos: plain(combos),
     categories: plain(categories),
@@ -239,7 +242,6 @@ export default async function HomePage() {
             </div>
 
             <div className="mt-8 text-center sm:hidden">
-              {/* NOTE: was /combo here and /combos above — make sure both match your real route */}
               <Link href="/combos" className="text-sm font-bold" style={{ color: GOLD_DEEP, fontFamily: FONT_SANS }}>
                 View all combos →
               </Link>

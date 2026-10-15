@@ -19,7 +19,11 @@ const ALLOWED_TYPES = {
 const ALLOWED_VARIANTS = [400, 800];
 
 const MAX_FILES_PER_REQUEST = 50;
-const URL_TTL_SECONDS = 600; // 10 min — enough for slow mobile connections
+const URL_TTL_SECONDS = 1800; // 30 min
+
+// Must match CACHE_CONTROL in lib/uploadClient.js (it is part of the signature).
+// Keys are random UUIDs and never change, so they are safe to cache forever.
+const CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 const s3 = new S3Client({
   region: 'auto',
@@ -75,6 +79,7 @@ export const POST = requireAdmin(async (req) => {
       files.map(async ({ contentType, variants = [] }) => {
         const ext = ALLOWED_TYPES[contentType];
         const prefix = `${folder}/${randomUUID()}`;
+        const widths = [...new Set(variants)]; // ignore duplicate widths
 
         const sign = (key) =>
           getSignedUrl(
@@ -83,6 +88,7 @@ export const POST = requireAdmin(async (req) => {
               Bucket: process.env.R2_BUCKET_NAME,
               Key: key,
               ContentType: contentType,
+              CacheControl: CACHE_CONTROL,
             }),
             { expiresIn: URL_TTL_SECONDS }
           );
@@ -90,14 +96,14 @@ export const POST = requireAdmin(async (req) => {
         const key = `${prefix}_full.${ext}`;
         const [uploadUrl, ...variantUrls] = await Promise.all([
           sign(key),
-          ...variants.map((w) => sign(`${prefix}_${w}.${ext}`)),
+          ...widths.map((w) => sign(`${prefix}_${w}.${ext}`)),
         ]);
 
         return {
           uploadUrl,
           url: `${base}/${key}`,
           key,
-          variants: variants.map((w, i) => ({
+          variants: widths.map((w, i) => ({
             width: w,
             uploadUrl: variantUrls[i],
             url: `${base}/${prefix}_${w}.${ext}`,
